@@ -1,27 +1,377 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>StantonSnagr Pro - Enterprise Architecture</title>
-
+    <title>StantonSnagr Pro - Dimensions Edition</title>
     <style>
-
         :root {
-
             --bg-dark: #121212;
-
             --card-bg: #1e1e1e;
-
             --primary: #4caf50;
-
             --primary-hover: #45a049;
-
             --text-main: #e0e0e0;
-
             --text-muted: #aaaaaa;
+            --border: #333333;
+            --danger: #f44336;
+            --accent-blue: #2196f3;
+            --accent-purple: #9c27b0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            padding: 15px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .header {
+            background: linear-gradient(135deg, #162e1d 0%, #0a170e 100%);
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border-left: 6px solid var(--primary);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        }
+        h2 { margin: 0; color: #fff; font-size: 1.5rem; font-weight: 800; letter-spacing: 0.5px; }
+        .subtitle { color: #81c784; font-size: 0.85rem; margin-top: 4px; font-weight: 600; display: flex; justify-content: space-between; }
+        .creator-tag { font-size: 0.75rem; color: #a5d6a7; font-style: italic; text-align: right; }
+        
+        .setup-box {
+            background-color: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border);
+        }
+        label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; color: var(--text-muted); }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 12px;
+            background: #252525;
+            border: 1px solid var(--border);
+            color: #fff;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        .upload-card {
+            border: 2px dashed #555;
+            padding: 30px 15px;
+            text-align: center;
+            border-radius: 10px;
+            background-color: var(--card-bg);
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+        
+        button.main-action {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            border-radius: 6px;
+            width: 100%;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        button.main-action:disabled { background-color: #444; color: #888; cursor: not-allowed; }
+        
+        .loading { color: #ffeb3b; font-weight: bold; display: none; margin: 15px 0; text-align: center; font-size: 0.9rem; }
+        
+        .snag-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+            border-left: 5px solid var(--primary);
+        }
+        .snag-header { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; border-bottom: 1px solid #333; padding-bottom: 5px; padding: 10px 10px 5px 10px; }
+        .snag-body { padding: 0 10px 10px 10px; }
+        .status-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+        .status-pending { background: #5c3a21; color: #ffb74d; }
+        .status-ri { background: #1a3a5c; color: #64b5f6; }
+        .status-passed { background: #1b5e20; color: #81c784; }
+        
+        .ai-chat-box { background: #151515; border: 1px solid #333; padding: 10px; border-radius: 6px; margin-top: 12px; }
+        .footer-credit { text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 30px; border-top: 1px solid var(--border); padding-top: 15px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>StantonSnagr Pro</h2>
+        <div class="subtitle">
+            <span>Enterprise Multi-Plot Matrix</span>
+            <span class="creator-tag">Created by Andrew Stanton</span>
+        </div>
+    </div>
+
+    <!-- Core Configurations -->
+    <div class="setup-box">
+        <label for="apiKey">Gemini Developer API Key:</label>
+        <input type="password" id="apiKey" placeholder="Enter personal AIzaSy key...">
+
+        <label for="userProfile">Inspection App Mode:</label>
+        <select id="userProfile">
+            <option value="Commercial">Site Manager / Commercial Inspector Mode</option>
+            <option value="Homeowner" selected>Homeowner Handover Snagging Mode</option>
+        </select>
+
+        <label for="plotInput">Active Target Plot / Room Location:</label>
+        <input type="text" id="plotInput" value="My Test House">
+    </div>
+
+    <!-- Spatial Reference Calibration -->
+    <div class="setup-box" style="border-color: var(--accent-purple);">
+        <label for="calibrationType" style="color: #d1c4e9; font-weight: bold;">📐 Spatial Reference Calibration:</label>
+        <select id="calibrationType">
+            <option value="none">No reference (Estimate dimensional visuals generally)</option>
+            <option value="brick">Standard UK Brick Course Visible in Frame (75mm high)</option>
+            <option value="door">Standard UK Internal Door Frame Visible (1981mm high)</option>
+            <option value="socket">Standard Double Socket Plate Visible (146mm wide)</option>
+            <option value="custom">Custom Reference Object (Specify dimension below)</option>
+        </select>
+        
+        <label for="customDimension">If custom reference, input its real size (mm):</label>
+        <input type="number" id="customDimension" placeholder="e.g. 175 for a stair riser or 297 for A4 paper">
+    </div>
+
+    <!-- Testing Fields -->
+    <div class="setup-box">
+        <label for="inspectionStage">NHBC / Key Stage Audit Phase:</label>
+        <select id="inspectionStage">
+            <option value="FirstFix">4. First Fix (Roofing/Carpentry/M&E)</option>
+            <option value="Drylining">5. Drylining & Plastering Boarding</option>
+            <option value="SecondFix">6. Second Fix & Mechanical Trims</option>
+            <option value="PreCML" selected>7. Pre-CML / Finals Audit</option>
+        </select>
+
+        <label for="targetTrade">Isolate Inspection Target Trade:</label>
+        <select id="targetTrade">
+            <option value="All">Evaluate General Image/Video (All Trades)</option>
+            <option value="Carpenter" selected>Carpentry / Joinery Only (e.g., Handrails, Doors)</option>
+            <option value="Dryliner">Drylining / Plastering Only</option>
+            <option value="Painter">Painting & Decorating Finishes Only</option>
+        </select>
+
+        <label for="initialQuestion" style="color: var(--accent-blue);">What dimension or height error are you measuring?:</label>
+        <input type="text" id="initialQuestion" placeholder="e.g. Measure the height of the handrail relative to the stairs.">
+    </div>
+
+    <!-- Upload Input -->
+    <div class="upload-card" onclick="document.getElementById('fileInput').click()">
+        <p style="margin: 0; font-size: 1.5rem;">📸 🎥</p>
+        <p style="margin: 5px 0 0 0; font-weight: 600;">Capture Target Photo / Video</p>
+        <input type="file" id="fileInput" accept="image/*,video/*" style="display:none;" onchange="processMediaAsset()">
+        <div id="mediaFeedback" style="margin-top:10px; font-weight:bold; color:var(--primary); font-size:0.85rem;"></div>
+    </div>
+
+    <button id="analyzeBtn" class="main-action" onclick="transmitPayloadToAI()" disabled>Execute Structural Analysis</button>
+    <div id="loading" class="loading">Transmitting telemetry payload and calibration markers to Gemini core processing engines...</div>
+
+    <!-- Live Active Dashboard -->
+    <div class="snag-list">
+        <h3 style="margin: 20px 0 10px 0; font-size: 1.1rem;">Active Defects & R/I Tracker Dashboard</h3>
+        <div id="snagsContainer"></div>
+    </div>
+
+    <div class="footer-credit">
+        STANTONSNAGR ECOSYSTEM • PATENT PENDING • CREATED BY ANDREW STANTON
+    </div>
+
+    <script>
+        let mediaPayloadBase64 = "";
+        let mediaMimeType = "";
+        let activeDatabase = [];
+
+        function processMediaAsset() {
+            const file = document.getElementById('fileInput').files[0];
+            if (!file) return;
+
+            mediaMimeType = file.type;
+            document.getElementById('mediaFeedback').innerText = `Processing media asset...`;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                if (file.type.startsWith('image/')) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const maxDim = 1024;
+                        let w = img.width; let h = img.height;
+                        if (w > h && w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
+                        else if (h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        mediaPayloadBase64 = canvas.toDataURL('image/jpeg', 0.75).split(',')[1];
+                        mediaMimeType = 'image/jpeg';
+                        document.getElementById('mediaFeedback').innerText = `Media Compressed & Ready`;
+                        document.getElementById('analyzeBtn').disabled = false;
+                    };
+                } else {
+                    mediaPayloadBase64 = reader.result.split(',')[1];
+                    document.getElementById('mediaFeedback').innerText = `Video Loaded & Ready`;
+                    document.getElementById('analyzeBtn').disabled = false;
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function transmitPayloadToAI() {
+            let key = document.getElementById('apiKey').value.trim();
+            if (!key) { alert("Please input your Gemini API Key first."); return; }
+
+            const loadingDiv = document.getElementById('loading');
+            const btn = document.getElementById('analyzeBtn');
+            loadingDiv.style.display = 'block';
+            btn.disabled = true;
+
+            const currentTrade = document.getElementById('targetTrade').value;
+            const currentStage = document.getElementById('inspectionStage').value;
+            const profile = document.getElementById('userProfile').value;
+            const userQuestion = document.getElementById('initialQuestion').value.trim();
+            
+            const calType = document.getElementById('calibrationType').value;
+            const customDim = document.getElementById('customDimension').value;
+
+            let instructions = `You are a senior construction auditor conducting a ${currentStage} quality check under ${profile} view.\n`;
+            
+            if(calType !== "none") {
+                instructions += `CRITICAL SCALING INSTRUCTIONS: Use photogrammetry pixel relative scaling. The frame contains a known physical metric target anchor:\n`;
+                if(calType === "brick") instructions += `- Known Reference: A standard UK brick course (including mortar bed) which is exactly 75mm vertically.\n`;
+                if(calType === "door") instructions += `- Known Reference: A standard UK internal door frame height which is exactly 1981mm vertically.\n`;
+                if(calType === "socket") instructions += `- Known Reference: A standard UK double socket switch plate which is exactly 146mm horizontally.\n`;
+                if(calType === "custom" && customDim) instructions += `- Known Reference: A custom user anchor item measuring exactly ${customDim}mm.\n`;
+                instructions += `Locate this reference element in the frame, calculate the pixel-to-millimeter ratio, and mathematically measure the target dimensions or height parameters specified by the user. State calculated heights explicitly in mm.\n`;
+            }
+
+            if(userQuestion) {
+                instructions += `USER AUDIT REQUEST: "${userQuestion}". Measure and verify compliance.\n`;
+            }
+            if(currentTrade !== "All") {
+                instructions += `TRADE ISOLATION DIRECTIVE: Focus purely on ${currentTrade} parameters. Ignore paint, minor scuffs, or unrelated trades.\n`;
+            }
+            
+            instructions += `Return findings strictly as a raw JSON block with no markdown code block wrapping. Follow this syntax schema structure:\n{\n"trade": "Trade Name Involved",\n"issue": "Detailed issue description including calculated millimetric measurements compared to standard regulations",\n"cost": "Estimated rectification cost in GBP numbers only",\n"remedial": "Mechanical corrective action directive"\n}`;
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
+            const payload = {
+                contents: [{ parts: [{ text: instructions }, { inlineData: { mimeType: mediaMimeType, data: mediaPayloadBase64 } }] }]
+            };
+
+            try {
+                const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const data = await response.json();
+                
+                if(data.error) throw new Error(data.error.message);
+                
+                let resultText = data.candidates[0].content.parts[0].text;
+                resultText = resultText.substring(resultText.indexOf("{"), resultText.lastIndexOf("}") + 1);
+                const parsed = JSON.parse(resultText);
+
+                activeDatabase.unshift({
+                    id: Date.now(),
+                    plot: document.getElementById('plotInput').value,
+                    stage: currentStage,
+                    trade: parsed.trade,
+                    issue: parsed.issue,
+                    cost: parsed.cost,
+                    remedial: parsed.remedial,
+                    status: 'Pending'
+                });
+
+                renderSnags();
+                document.getElementById('mediaFeedback').innerText = "";
+                document.getElementById('initialQuestion').value = "";
+                mediaPayloadBase64 = "";
+            } catch (error) {
+                alert(`AI Core Rejection: ${error.message || "Check your configuration boundaries."}`);
+                console.error(error);
+            } finally {
+                loadingDiv.style.display = 'none';
+                btn.disabled = false;
+            }
+        }
+
+        function renderSnags() {
+            const container = document.getElementById('snagsContainer');
+            container.innerHTML = "";
+
+            if(activeDatabase.length === 0) {
+                container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted); font-size:0.9rem;">No active defects logged. Structure compliant.</div>`;
+                return;
+            }
+
+            activeDatabase.forEach(snag => {
+                const card = document.createElement('div');
+                card.className = "snag-card";
+                
+                let badgeClass = "status-pending";
+                if(snag.status === 'Ready for R/I') badgeClass = "status-ri";
+                if(snag.status === 'Passed/Signed Off') badgeClass = "status-passed";
+
+                card.innerHTML = `
+                    <div class="snag-header">
+                        <span><strong>${snag.plot}</strong> [Stage: ${snag.stage}]</span>
+                        <span class="status-badge ${badgeClass}">${snag.status}</span>
+                    </div>
+                    <div class="snag-body">
+                        <p style="margin:5px 0;"><strong>Responsible Trade:</strong> ${snag.trade}</p>
+                        <p style="margin:5px 0; line-height: 1.4;"><strong>Measurement Assessment:</strong> ${snag.issue}</p>
+                        <p style="margin:5px 0; color:#ffb74d;"><strong>Estimated Remedial Cost:</strong> £${snag.cost}</p>
+                        <p style="margin:5px 0; color:var(--text-muted); font-size:0.9rem;"><strong>Remedial Mandate:</strong> ${snag.remedial}</p>
+                        
+                        <div style="margin-top:10px; display:flex; gap:5px;">
+                            <button style="background:#333; color:white; font-size:0.75rem; padding:6px; flex:1; border:1px solid #555; border-radius:4px;" onclick="updateStatus(${snag.id}, 'Ready for R/I')">Flag for R/I</button>
+                            <button style="background:green; color:white; font-size:0.75rem; padding:6px; flex:1; border:none; border-radius:4px; font-weight:bold;" onclick="updateStatus(${snag.id}, 'Passed/Signed Off')">Sign Off</button>
+                        </div>
+
+                        <div class="ai-chat-box">
+                            <span style="font-size:0.75rem; color:var(--accent-blue); font-weight:bold;">Interactive Ask AI Tracker:</span>
+                            <div id="aiReply-${snag.id}" style="font-size:0.85rem; margin:5px 0; color:#ccc; max-height:150px; overflow-y:auto; padding:3px;"></div>
+                            <div style="display:flex; gap:5px; margin-top:5px;">
+                                <input type="text" id="aiIn-${snag.id}" placeholder="Ask follow up question..." style="margin:0; padding:6px; font-size:0.8rem; flex:1;">
+                                <button style="background:var(--accent-blue); color:white; border:none; padding:0 12px; font-size:0.8rem; border-radius:4px;" onclick="askAIQuery(${snag.id}, '${snag.issue}')">Ask</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function updateStatus(id, newStatus) {
+            const item = activeDatabase.find(x => x.id === id);
+            if(item) { item.status = newStatus; renderSnags(); }
+        }
+
+        async function askAIQuery(id, context) {
+            const key = document.getElementById('apiKey').value.trim();
+            const query = document.getElementById(`aiIn-${id}`).value;
+            if(!key || !query) return;
+
+            const box = document.getElementById(`aiReply-${id}`);
+            box.innerText = "Consulting knowledge core...";
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
+            const prompt = `Measurement context: "${context}". User calculation question: "${query}". Provide a highly accurate, brief engineering/NHBC dimensional response.`;
+
+            try {
+                const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
+                const data = await response.json();
+                box.innerText = data.candidates[0].content.parts[0].text;
+                document.getElementById(`aiIn-${id}`).value = "";
+            } catch(e) {
+                box.innerText = "Error fetching response.";
+            }
+        }
+    </script>
+</body>
+</html>
